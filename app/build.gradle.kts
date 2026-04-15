@@ -2,16 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.campusdigitalfp.filmotecav2"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.campusdigitalfp.filmotecav2"
-        minSdk = 21
-        targetSdk = 34
+        minSdk = 23
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -28,11 +29,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -40,6 +41,20 @@ android {
 }
 
 dependencies {
+    // Importa la BoM de Firebase (la versión 33.10.0 es muy estable)
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+
+    // Librerías de Firebase SIN versión (la cogen de la BoM)
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-analytics")
+
+    // Google Sign-In (Esta sí lleva versión propia)
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+    implementation("androidx.compose.runtime:runtime:1.7.5")
+    implementation("androidx.compose.runtime:runtime-livedata:1.7.5")
+    implementation("androidx.compose.runtime:runtime-rxjava2:1.7.5")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -57,4 +72,16 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    //Para que Retrofit y OkHttp funcionen correctamente
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+    // Coil - para mostrar imágenes remotas y locales en Compose
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // ExoPlayer - para reproducir vídeos
+    implementation("androidx.media3:media3-exoplayer:1.3.1")
+    implementation("androidx.media3:media3-ui:1.3.1")
 }
