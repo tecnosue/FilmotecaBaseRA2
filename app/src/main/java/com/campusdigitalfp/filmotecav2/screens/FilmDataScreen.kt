@@ -1,5 +1,6 @@
 package com.campusdigitalfp.filmotecav2.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -26,15 +27,19 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavHostController
 import com.campusdigitalfp.filmotecav2.model.Film
-import com.campusdigitalfp.filmotecav2.model.FilmDataSource
+//import com.campusdigitalfp.filmotecav2.model.FilmDataSource
 import com.campusdigitalfp.filmotecav2.R
 import com.campusdigitalfp.filmotecav2.common.FilmTopAppBar
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.campusdigitalfp.filmotecav2.viewmodel.FilmViewModel
 
 @Composable
-fun FilmDataScreen(navController: NavHostController, filmIndex: Int) {
+//fun FilmDataScreen(navController: NavHostController, filmIndex: Int) {
+fun FilmDataScreen(navController: NavHostController, film: Film, viewModel: FilmViewModel = viewModel()) {
+
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle ?: return
     ShowResultToast(savedStateHandle)
-    val film = FilmDataSource.films[filmIndex]
+    //val film = FilmDataSource.films[filmIndex]
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         FilmTopAppBar(
@@ -60,13 +65,23 @@ fun FilmDataScreen(navController: NavHostController, filmIndex: Int) {
                         Text("Volver")
                     }
                     Button(
-                        onClick = { navController.navigate("edit/$filmIndex") },
+                        onClick = { navController.navigate("edit/${film.id}") },
                         modifier = Modifier
                             .weight(1f)
                             .padding(2.dp)
                     ) {
                         Text("Editar")
                     }
+                }
+            }
+            Row {
+                Button(
+                    onClick = {
+                        Log.i("Filmoteca", "vamos a peliculas relacionadas...")
+                        navController.navigate("related/${film.id}") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Ver películas relacionadas")
                 }
             }
         }
@@ -85,7 +100,13 @@ fun VistaFilm(film: Film) {
                 modifier = Modifier
                     .padding(4.dp)
                     .size(150.dp),
-                painter = painterResource(film.imageResId),
+                painter = painterResource(
+                    id = context.resources.getIdentifier(film.imagen, "drawable", context.packageName).let {
+                        if (it != 0) it else R.drawable.icono_pelicula
+                    }
+                ),
+
+
                 contentDescription = "Icono de la película"
             )
             Column {

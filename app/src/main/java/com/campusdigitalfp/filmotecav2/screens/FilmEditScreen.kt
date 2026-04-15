@@ -34,14 +34,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.campusdigitalfp.filmotecav2.model.Film
-import com.campusdigitalfp.filmotecav2.model.FilmDataSource.films
+//import com.campusdigitalfp.filmotecav2.model.FilmDataSource.films
 import com.campusdigitalfp.filmotecav2.R
 import com.campusdigitalfp.filmotecav2.common.Boton
 import com.campusdigitalfp.filmotecav2.common.FilmTopAppBar
+import com.campusdigitalfp.filmotecav2.viewmodel.FilmViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun FilmEditScreen(navController: NavHostController, filmIndex: Int) {
-    val film = films[filmIndex]
+fun FilmEditScreen(navController: NavHostController, film: Film, viewModel: FilmViewModel = viewModel()) {
+    //val film = films[filmIndex]
 
     BackHandler {
         navController.previousBackStackEntry?.savedStateHandle?.set("key_result", "RESULT_CANCELED")
@@ -51,25 +53,26 @@ fun FilmEditScreen(navController: NavHostController, filmIndex: Int) {
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         FilmTopAppBar(navController, principal = false, editar = true)
     }) { innerPadding ->
-        EditorFilm(innerPadding, navController, film, filmIndex)
+        EditorFilm(innerPadding, navController, film, viewModel)
     }
 }
 
 @Composable
 fun EditorFilm(
-    paddingValues: PaddingValues, navController: NavHostController, film: Film, filmIndex: Int
+    paddingValues: PaddingValues, navController: NavHostController, film: Film, viewModel: FilmViewModel
 ) {
-    var titulo by remember { mutableStateOf(film.title ?: "") }
-    var director by remember { mutableStateOf(film.director ?: "") }
+    var titulo by remember { mutableStateOf(film.title) }
+    var director by remember { mutableStateOf(film.director) }
     var anyo by remember { mutableStateOf(film.year.toString()) }
-    var url by remember { mutableStateOf(film.imdbUrl ?: "") }
-    val imagen = film.imageResId
-    var comentarios by remember { mutableStateOf(film.comments ?: "") }
+    var url by remember { mutableStateOf(film.imdbUrl) }
+    val context = LocalContext.current
+    //val imagen = film.imageResId
+    var comentarios by remember { mutableStateOf(film.comments) }
 
     var expandedGenero by remember { mutableStateOf(false) }
     var expandedFormato by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
+
     val generoList = context.resources.getStringArray(R.array.genero_list).toList()
     val formatoList = context.resources.getStringArray(R.array.formato_list).toList()
 
@@ -89,7 +92,11 @@ fun EditorFilm(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = painterResource(imagen),
+                painter = painterResource(
+                    id = context.resources.getIdentifier(film.imagen, "drawable", context.packageName).let {
+                        if (it != 0) it else R.drawable.icono_pelicula
+                    }
+                ),
                 contentDescription = "Icono película",
                 modifier = Modifier
                     .padding(4.dp)
@@ -193,7 +200,7 @@ fun EditorFilm(
             Boton(
                 onClick = {
                     Log.i("Filmoteca", "Edición finalizada. Guardando cambios...")
-                    guardarCambios(navController, film, filmIndex, titulo, director, anyo.toIntOrNull() ?: film.year, url, genero, formato, comentarios)
+                    guardarCambios(navController, film, viewModel, titulo, director, anyo.toIntOrNull() ?: film.year, url, genero, formato, comentarios)
                 }, text = "Guardar", modifier = Modifier
                     .weight(1f)
                     .padding(1.dp)
@@ -216,7 +223,7 @@ fun EditorFilm(
 fun guardarCambios(
     navController: NavHostController,
     film: Film,
-    filmIndex: Int,
+    viewModel: FilmViewModel,
     titulo: String,
     director: String,
     anyo: Int,
@@ -225,7 +232,8 @@ fun guardarCambios(
     formato: Int,
     comentarios: String
 ) {
-    films[filmIndex] = film.copy(
+
+    val updatedFilm = film.copy(
         title = titulo,
         director = director,
         year = anyo,
@@ -234,6 +242,8 @@ fun guardarCambios(
         format = formato,
         comments = comentarios
     )
+    viewModel.updateFilm(updatedFilm)
+
     navController.previousBackStackEntry?.savedStateHandle?.set("key_result", "RESULT_OK")
     navController.popBackStack()
 }
